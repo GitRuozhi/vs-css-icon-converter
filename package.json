@@ -1,0 +1,15 @@
+{
+  "name": "vs-css-icon-converter",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Conservative CSS icon to SVG converter for VS-style icons.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "convert": "node scripts/convert-icons.mjs",
+    "test": "node scripts/test-converter.mjs"
+  }
+}
