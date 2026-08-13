@@ -15,6 +15,14 @@ await fs.writeFile(css, `
 .icon-plus::after { transform: rotate(90deg); }
 .icon-frame { position: relative; width: 16px; height: 16px; }
 .icon-frame::before { content: ""; position: absolute; inset: 0; margin: auto; width: 16px; height: 16px; background: linear-gradient(currentColor 0 0) 0px 0px / 2px 6px no-repeat, linear-gradient(currentColor 0 0) 14px 0px / 2px 6px no-repeat; }
+.icon-fullscreen { position: relative; width: 16px; height: 16px; }
+.icon-fullscreen > .corner-a::before, .icon-fullscreen > .corner-a::after, .icon-fullscreen > .corner-b::before, .icon-fullscreen > .corner-b::after { content: ""; position: absolute; width: 8px; height: 8px; background: currentColor; clip-path: polygon(25% 50%, 50% 75%, 75% 50%, 50% 25%, 75% 0%, 0% 0%, 0% 75%); }
+.icon-fullscreen > .corner-a::before { left: 0px; top: 0px; }
+.icon-fullscreen > .corner-a::after { right: 0px; top: 0px; transform: rotate(90deg); }
+.icon-fullscreen > .corner-b::before { right: 0px; bottom: 0px; transform: rotate(180deg); }
+.icon-fullscreen > .corner-b::after { left: 0px; bottom: 0px; transform: rotate(270deg); }
+.icon-dotted::before { content: ""; position: absolute; left: 0px; bottom: 2px; width: 8px; height: 6px; border: 2px dotted currentColor; }
+.icon-solid::before { content: ""; position: absolute; left: 0px; bottom: 2px; width: 12px; height: 10px; border: 2px solid currentColor; }
 .icon-unknown::before { content: ""; position: absolute; width: 16px; height: 16px; filter: blur(1px); }
 `, 'utf8');
 
@@ -44,6 +52,22 @@ const frame = await run('frame');
 assert.equal(frame.code, 0);
 assert.equal(frame.report.status, 'converted');
 assert.equal(frame.report.shapeCount, 2);
+
+const fullscreen = await run('fullscreen');
+assert.equal(fullscreen.code, 0);
+assert.equal(fullscreen.report.status, 'converted');
+assert.equal(fullscreen.report.shapeCount, 4);
+
+const dotted = await run('dotted');
+assert.equal(dotted.code, 0);
+assert.equal(dotted.report.status, 'converted');
+assert.match(dotted.svg, /stroke-dasharray="1 1"/);
+
+const solid = await run('solid');
+assert.equal(solid.code, 0);
+assert.equal(solid.report.status, 'converted');
+assert.equal(solid.report.shapeCount, 1);
+assert.match(solid.svg, /stroke="currentColor"/);
 
 const unknown = await run('unknown');
 assert.equal(unknown.code, 2);

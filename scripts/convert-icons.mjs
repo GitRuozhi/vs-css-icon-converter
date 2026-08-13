@@ -102,16 +102,18 @@ function declarationMap(declarations) {
 }
 
 function collectRules(rules, selector) {
-  const exact = new Map();
+  const grouped = new Map();
   for (const rule of rules) {
     for (const candidate of rule.selectors) {
-      if (candidate === selector || candidate === `${selector}::before` || candidate === `${selector}::after`) {
-        const key = candidate.endsWith('::before') ? 'before' : candidate.endsWith('::after') ? 'after' : 'root';
-        exact.set(key, [...(exact.get(key) ?? []), ...rule.declarations]);
-      }
+      const normalized = candidate.replaceAll(/\s+/g, ' ').trim();
+      const matchesRoot = normalized === selector;
+      const matchesPseudo = normalized.startsWith(selector) && /::(before|after)$/.test(normalized);
+      if (!matchesRoot && !matchesPseudo) continue;
+      const key = matchesRoot ? 'root' : normalized;
+      grouped.set(key, [...(grouped.get(key) ?? []), ...rule.declarations]);
     }
   }
-  return new Map([...exact.entries()].map(([key, declarations]) => [key, declarationMap(declarations)]));
+  return new Map([...grouped.entries()].map(([key, declarations]) => [key, declarationMap(declarations)]));
 }
 
 function parseTransform(value, warnings, context) {
@@ -222,6 +224,16 @@ function transformedRect(x, y, width, height, transforms) {
 
 function addBorderShapes(shapes, map, box, warnings, context, transforms = []) {
   const all = parseBorder(map.get('border') ?? '');
+  const hasSideBorder = ['top', 'right', 'bottom', 'left'].some((side) => map.has(`border-${side}`));
+  if (all && !hasSideBorder) {
+    const transformed = transformedRect(box.x, box.y, box.width, box.height, transforms);
+    if (all.style === 'dotted' || all.style === 'dashed') {
+      shapes.push({ type: 'strokeRect', x: box.x, y: box.y, width: box.width, height: box.height, style: all.style, strokeWidth: all.width, transforms });
+    } else {
+      shapes.push({ ...transformed, type: 'strokePolygon', strokeWidth: all.width });
+    }
+    return;
+  }
   const sides = {};
   for (const side of ['top', 'right', 'bottom', 'left']) sides[side] = parseBorder(map.get(`border-${side}`) ?? '') ?? all;
   for (const [side, border] of Object.entries(sides)) {
@@ -229,7 +241,6 @@ function addBorderShapes(shapes, map, box, warnings, context, transforms = []) {
     if (border.style !== 'solid' && border.style !== 'dotted') warnings.push(`${context}: unsupported border style ${border.style}`);
     const add = (x, y, width, height) => {
       if (border.style === 'dotted') {
-        warnings.push(`${context}: dotted border kept as an axis-aligned approximation`);
         shapes.push({ type: 'strokeRect', x, y, width, height, style: border.style, strokeWidth: border.width });
       } else {
         shapes.push(transformedRect(x, y, width, height, transforms));
@@ -247,15 +258,14 @@ function convertIcon(rules, icon, size) {
   const grouped = collectRules(rules, selector);
   const warnings = [];
   const shapes = [];
-  if (!grouped.has('root') && !grouped.has('before') && !grouped.has('after')) warnings.push(`${selector}: no matching CSS rules`);
+  if (!grouped.has('root') && grouped.size === 0) warnings.push(`${selector}: no matching CSS rules`);
   const root = grouped.get('root') ?? new Map();
   const rootBox = { x: 0, y: 0, width: number(root.get('width') ?? '') ?? size, height: number(root.get('height') ?? '') ?? size };
   addBorderShapes(shapes, root, rootBox, warnings, `${selector} root`);
 
-  for (const part of ['before', 'after']) {
-    const map = grouped.get(part);
-    if (!map) continue;
-    const context = `${selector}::${part}`;
+  for (const [part, map] of grouped) {
+    if (part === 'root') continue;
+    const context = part === `${selector}::before` || part === `${selector}::after` ? part : `${part}`;
     const box = boxFor(map, size, warnings, context);
     const transforms = parseTransform(map.get('transform') ?? '', warnings, context);
     const clipPath = map.get('clip-path');
@@ -280,7 +290,7 @@ function convertIcon(rules, icon, size) {
       warnings.push(`${context}: unsupported declaration ${property}: ${value}`);
     }
   }
-  return { selector, shapes, warnings };
+  return { selector, shapes, warnings: [...new Set(warnings)] };
 }
 
 function shapeToSvg(shape) {
@@ -289,6 +299,10 @@ function shapeToSvg(shape) {
   if (shape.type === 'strokeRect') {
     const dash = shape.style === 'dotted' ? ' stroke-dasharray="1 1"' : '';
     return `<rect x="${formatNumber(shape.x + shape.strokeWidth / 2)}" y="${formatNumber(shape.y + shape.strokeWidth / 2)}" width="${formatNumber(shape.width - shape.strokeWidth)}" height="${formatNumber(shape.height - shape.strokeWidth)}" fill="none" stroke="currentColor" stroke-width="${formatNumber(shape.strokeWidth)}"${dash} />`;
+  }
+  if (shape.type === 'strokePolygon') {
+    const dash = shape.style === 'dotted' ? ' stroke-dasharray="1 1"' : '';
+    return `<polygon points="${pointsAttribute(shape.points)}" fill="none" stroke="currentColor" stroke-width="${formatNumber(shape.strokeWidth)}"${dash} />`;
   }
   return '';
 }
