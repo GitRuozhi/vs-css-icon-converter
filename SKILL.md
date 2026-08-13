@@ -34,7 +34,7 @@ Use the bundled Node CLI to convert selected CSS icon classes into SVG candidate
 - `rotate()`, `scaleX()`, and `scaleY()` transforms
 - solid and dotted rectangular borders
 
-The output uses a 16×16 viewBox by default, transparent background, and `currentColor`. The tool reports unsupported declarations rather than hiding them.
+The output uses a 16×16 viewBox by default, transparent background, and `currentColor`. The tool applies the VS `border-box` root model, pseudo-element `content-box` border expansion, simple transforms, and the 2px/2px dotted-border rhythm. It reports unsupported declarations rather than hiding them.
 
 ## Guardrails
 

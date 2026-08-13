@@ -10,7 +10,7 @@ const cli = path.join(root, 'scripts', 'convert-icons.mjs');
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'vs-css-icon-converter-'));
 const css = path.join(temp, 'icons.css');
 await fs.writeFile(css, `
-.icon-plus { position: relative; width: 16px; height: 16px; }
+.icon-plus { position: relative; width: 16px; height: 16px; box-sizing: border-box; }
 .icon-plus::before, .icon-plus::after { content: ""; position: absolute; inset: 0; margin: auto; width: 12px; height: 0px; border-top: 4px solid currentColor; transform-origin: center center; }
 .icon-plus::after { transform: rotate(90deg); }
 .icon-frame { position: relative; width: 16px; height: 16px; }
@@ -21,8 +21,13 @@ await fs.writeFile(css, `
 .icon-fullscreen > .corner-a::after { right: 0px; top: 0px; transform: rotate(90deg); }
 .icon-fullscreen > .corner-b::before { right: 0px; bottom: 0px; transform: rotate(180deg); }
 .icon-fullscreen > .corner-b::after { left: 0px; bottom: 0px; transform: rotate(270deg); }
+.icon-dotted { position: relative; width: 16px; height: 16px; }
 .icon-dotted::before { content: ""; position: absolute; left: 0px; bottom: 2px; width: 8px; height: 6px; border: 2px dotted currentColor; }
+.icon-solid { position: relative; width: 16px; height: 16px; }
 .icon-solid::before { content: ""; position: absolute; left: 0px; bottom: 2px; width: 12px; height: 10px; border: 2px solid currentColor; }
+.icon-root-border { position: relative; width: 16px; height: 16px; border: 2px solid currentColor; }
+.icon-transform { position: relative; width: 16px; height: 16px; }
+.icon-transform::before { content: ""; position: absolute; right: 0px; top: 0px; width: 14px; height: 6px; background: currentColor; clip-path: polygon(0% 67%, 0% 100%, 100% 100%, 50% 0%, 50% 67%); transform: scaleX(-1); }
 .icon-unknown::before { content: ""; position: absolute; width: 16px; height: 16px; filter: blur(1px); }
 `, 'utf8');
 
@@ -61,13 +66,23 @@ assert.equal(fullscreen.report.shapeCount, 4);
 const dotted = await run('dotted');
 assert.equal(dotted.code, 0);
 assert.equal(dotted.report.status, 'converted');
-assert.match(dotted.svg, /stroke-dasharray="1 1"/);
+assert.match(dotted.svg, /stroke-dasharray="2 2"/);
 
 const solid = await run('solid');
 assert.equal(solid.code, 0);
 assert.equal(solid.report.status, 'converted');
 assert.equal(solid.report.shapeCount, 1);
 assert.match(solid.svg, /stroke="currentColor"/);
+
+const transform = await run('transform');
+assert.equal(transform.code, 0);
+assert.equal(transform.report.status, 'converted');
+assert.match(transform.svg, /points="16,4\.02 16,6 2,6 9,0 9,4\.02"/);
+
+const rootBorder = await run('root-border');
+assert.equal(rootBorder.code, 0);
+assert.equal(rootBorder.report.status, 'converted');
+assert.match(rootBorder.svg, /x="1" y="1" width="14" height="14"/);
 
 const unknown = await run('unknown');
 assert.equal(unknown.code, 2);

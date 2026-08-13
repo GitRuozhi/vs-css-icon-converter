@@ -140,9 +140,10 @@ function parseTransform(value, warnings, context) {
 function transformPoint(point, center, transforms) {
   let [x, y] = point;
   for (const transform of transforms) {
-    if (transform.kind === 'scaleX') x = center[0] + (x - center[0]) * transform.value;
-    if (transform.kind === 'scaleY') y = center[1] + (y - center[1]) * transform.value;
-    if (transform.kind === 'rotate') {
+    const kind = String(transform.kind).toLowerCase();
+    if (kind === 'scalex') x = center[0] + (x - center[0]) * transform.value;
+    if (kind === 'scaley') y = center[1] + (y - center[1]) * transform.value;
+    if (kind === 'rotate') {
       const radians = transform.value * Math.PI / 180;
       const dx = x - center[0];
       const dy = y - center[1];
@@ -162,12 +163,18 @@ function pointsAttribute(points) {
   return points.map(([x, y]) => `${formatNumber(x)},${formatNumber(y)}`).join(' ');
 }
 
-function boxFor(map, size, warnings, context) {
+function boxFor(map, size, warnings, context, defaultBoxSizing = 'content-box') {
   const width = number(map.get('width') ?? '') ?? 0;
   const height = number(map.get('height') ?? '') ?? 0;
-  const borderWidth = number((map.get('border-top') ?? '').match(/^(\d+(?:\.\d+)?)px/)?.[0] ?? '') ?? 0;
-  const visualWidth = width;
-  const visualHeight = height + borderWidth;
+  const borderWidths = ['top', 'right', 'bottom', 'left'].map((side) => number((map.get(`border-${side}`) ?? '').match(/^(\d+(?:\.\d+)?)px/)?.[0] ?? '') ?? 0);
+  const allBorder = parseBorder(map.get('border') ?? '');
+  const borderTop = borderWidths[0] || allBorder?.width || 0;
+  const borderRight = borderWidths[1] || allBorder?.width || 0;
+  const borderBottom = borderWidths[2] || allBorder?.width || 0;
+  const borderLeft = borderWidths[3] || allBorder?.width || 0;
+  const boxSizing = map.get('box-sizing')?.toLowerCase() ?? defaultBoxSizing;
+  const visualWidth = width + (boxSizing === 'border-box' ? 0 : borderLeft + borderRight);
+  const visualHeight = height + (boxSizing === 'border-box' ? 0 : borderTop + borderBottom);
   let x = number(map.get('left') ?? '');
   let y = number(map.get('top') ?? '');
   const right = number(map.get('right') ?? '');
@@ -181,7 +188,7 @@ function boxFor(map, size, warnings, context) {
   if (x === null) x = 0;
   if (y === null) y = 0;
   if (!width && !height && !map.has('border-left') && !map.has('border-right')) warnings.push(`${context}: no px geometry found`);
-  return { x, y, width, height, visualWidth, visualHeight };
+  return { x, y, width, height, visualWidth, visualHeight, borderTop, borderRight, borderBottom, borderLeft, boxSizing };
 }
 
 function parsePolygon(value, box, transforms, size) {
@@ -225,13 +232,10 @@ function transformedRect(x, y, width, height, transforms) {
 function addBorderShapes(shapes, map, box, warnings, context, transforms = []) {
   const all = parseBorder(map.get('border') ?? '');
   const hasSideBorder = ['top', 'right', 'bottom', 'left'].some((side) => map.has(`border-${side}`));
+  const outerWidth = box.visualWidth ?? box.width;
+  const outerHeight = box.visualHeight ?? box.height;
   if (all && !hasSideBorder) {
-    const transformed = transformedRect(box.x, box.y, box.width, box.height, transforms);
-    if (all.style === 'dotted' || all.style === 'dashed') {
-      shapes.push({ type: 'strokeRect', x: box.x, y: box.y, width: box.width, height: box.height, style: all.style, strokeWidth: all.width, transforms });
-    } else {
-      shapes.push({ ...transformed, type: 'strokePolygon', strokeWidth: all.width });
-    }
+    shapes.push({ type: 'strokeRect', x: box.x, y: box.y, width: outerWidth, height: outerHeight, style: all.style, strokeWidth: all.width, transforms });
     return;
   }
   const sides = {};
@@ -246,10 +250,10 @@ function addBorderShapes(shapes, map, box, warnings, context, transforms = []) {
         shapes.push(transformedRect(x, y, width, height, transforms));
       }
     };
-    if (side === 'top') add(box.x, box.y, box.width, border.width);
-    if (side === 'bottom') add(box.x, box.y + box.height - border.width, box.width, border.width);
-    if (side === 'left') add(box.x, box.y, border.width, box.height);
-    if (side === 'right') add(box.x + box.width - border.width, box.y, border.width, box.height);
+    if (side === 'top') add(box.x, box.y, outerWidth, border.width);
+    if (side === 'bottom') add(box.x, box.y + box.borderTop + box.height, outerWidth, border.width);
+    if (side === 'left') add(box.x, box.y, border.width, outerHeight);
+    if (side === 'right') add(box.x + box.borderLeft + box.width, box.y, border.width, outerHeight);
   }
 }
 
@@ -260,7 +264,7 @@ function convertIcon(rules, icon, size) {
   const shapes = [];
   if (!grouped.has('root') && grouped.size === 0) warnings.push(`${selector}: no matching CSS rules`);
   const root = grouped.get('root') ?? new Map();
-  const rootBox = { x: 0, y: 0, width: number(root.get('width') ?? '') ?? size, height: number(root.get('height') ?? '') ?? size };
+  const rootBox = boxFor(root, size, warnings, `${selector} root`, 'border-box');
   addBorderShapes(shapes, root, rootBox, warnings, `${selector} root`);
 
   for (const [part, map] of grouped) {
@@ -275,11 +279,14 @@ function convertIcon(rules, icon, size) {
       else warnings.push(`${context}: unsupported clip-path ${clipPath}`);
     } else if (map.has('background') || map.has('background-color') || map.has('border-top') || map.has('border-bottom') || map.has('border-left') || map.has('border-right') || map.has('border')) {
       const background = map.get('background') ?? map.get('background-color') ?? '';
+      const contentX = box.x + box.borderLeft;
+      const contentY = box.y + box.borderTop;
+      const contentBox = { ...box, x: contentX, y: contentY };
       if (/^currentColor$/i.test(background)) {
-        const corners = [[box.x, box.y], [box.x + box.width, box.y], [box.x + box.width, box.y + box.height], [box.x, box.y + box.height]];
+        const corners = [[contentBox.x, contentBox.y], [contentBox.x + contentBox.width, contentBox.y], [contentBox.x + contentBox.width, contentBox.y + contentBox.height], [contentBox.x, contentBox.y + contentBox.height]];
         shapes.push({ type: 'polygon', points: corners.map((point) => transformPoint(point, [box.x + box.width / 2, box.y + box.height / 2], transforms)) });
       } else if (/linear-gradient/i.test(background)) {
-        shapes.push(...parseGradientRects(background, box, warnings, context));
+        shapes.push(...parseGradientRects(background, contentBox, warnings, context));
       } else if (background) {
         warnings.push(`${context}: unsupported background ${background}`);
       }
@@ -297,7 +304,7 @@ function shapeToSvg(shape) {
   if (shape.type === 'rect') return `<rect x="${formatNumber(shape.x)}" y="${formatNumber(shape.y)}" width="${formatNumber(shape.width)}" height="${formatNumber(shape.height)}" />`;
   if (shape.type === 'polygon') return `<polygon points="${pointsAttribute(shape.points)}" />`;
   if (shape.type === 'strokeRect') {
-    const dash = shape.style === 'dotted' ? ' stroke-dasharray="1 1"' : '';
+    const dash = shape.style === 'dotted' ? ' stroke-dasharray="2 2"' : '';
     return `<rect x="${formatNumber(shape.x + shape.strokeWidth / 2)}" y="${formatNumber(shape.y + shape.strokeWidth / 2)}" width="${formatNumber(shape.width - shape.strokeWidth)}" height="${formatNumber(shape.height - shape.strokeWidth)}" fill="none" stroke="currentColor" stroke-width="${formatNumber(shape.strokeWidth)}"${dash} />`;
   }
   if (shape.type === 'strokePolygon') {
