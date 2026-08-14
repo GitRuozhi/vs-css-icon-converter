@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const cli = path.join(root, 'scripts', 'convert-icons.mjs');
-const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'vs-css-icon-converter-'));
+const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'css-to-svg-converter-'));
 const css = path.join(temp, 'icons.css');
 await fs.writeFile(css, `
 * { box-sizing: border-box; }

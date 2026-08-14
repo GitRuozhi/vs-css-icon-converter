@@ -1,4 +1,4 @@
 interface:
   display_name: "CSS to SVG Converter"
   short_description: "High-fidelity CSS icon to SVG conversion"
-  default_prompt: "Use $vs-css-icon-converter to convert selected CSS icon definitions into high-fidelity SVG candidates and flag any manual-review cases."
+  default_prompt: "Use $css-to-svg-converter to convert selected CSS icon definitions into high-fidelity SVG candidates and flag any manual-review cases."

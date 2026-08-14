@@ -11,13 +11,13 @@ Built specifically for CSS icons, where generic CSS-to-SVG converters tend to lo
 This is a general `SKILL.md`-based skill. Put this repository in the skill directory configured by your AI Agent runtime, then ask the agent to convert CSS icons into SVG candidates and flag anything needing manual review.
 
 ```text
-<agent-skill-directory>/vs-css-icon-converter
+<agent-skill-directory>/css-to-svg-converter
 ```
 
 For a manual install:
 
 ```sh
-git clone https://github.com/GitRuozhi/vs-css-icon-converter.git <agent-skill-directory>/vs-css-icon-converter
+git clone https://github.com/GitRuozhi/CSS-to-SVG-Converter.git <agent-skill-directory>/css-to-svg-converter
 ```
 
 ## CLI

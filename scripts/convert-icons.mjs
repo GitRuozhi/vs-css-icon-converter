@@ -476,6 +476,6 @@ async function main() {
 }
 
 try { await main(); } catch (error) {
-  console.error(`vs-css-icon-converter: ${error.message}`);
+  console.error(`css-to-svg-converter: ${error.message}`);
   process.exitCode = 1;
 }

@@ -1,5 +1,5 @@
 {
-  "name": "vs-css-icon-converter",
+  "name": "css-to-svg-converter",
   "version": "0.1.0",
   "private": false,
   "type": "module",
@@ -15,11 +15,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GitRuozhi/vs-css-icon-converter.git"
+    "url": "git+https://github.com/GitRuozhi/CSS-to-SVG-Converter.git"
   },
-  "homepage": "https://github.com/GitRuozhi/vs-css-icon-converter",
+  "homepage": "https://github.com/GitRuozhi/CSS-to-SVG-Converter",
   "bugs": {
-    "url": "https://github.com/GitRuozhi/vs-css-icon-converter/issues"
+    "url": "https://github.com/GitRuozhi/CSS-to-SVG-Converter/issues"
   },
   "engines": {
     "node": ">=20"
