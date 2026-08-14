@@ -4,6 +4,8 @@ An AI Agent Skill and deterministic Node.js CLI for high-fidelity CSS icon → S
 
 ![CSS and SVG rows for tick, broken-heart, awkward, link-connected, download, volume, audio-track, and loop.](.github/assets/css-to-svg-8-icons.png)
 
+Download and open the same comparison as a standalone browser page: [examples/icon-comparison.html](examples/icon-comparison.html). It has no external dependencies.
+
 Built specifically for CSS icons, where generic CSS-to-SVG converters tend to lose pseudo-elements, border geometry, clipping, and transform placement. It reads CSS rules directly instead of tracing screenshots, producing reviewable SVG candidates that preserve the icon’s construction.
 
 ## Use with an AI Agent
