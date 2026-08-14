@@ -1,26 +1,24 @@
-# VS CSS Icon Converter
+# CSS to SVG 转换器
 
-Convert CSS icon geometry into transparent, `currentColor` SVG candidates for review.
+An AI Agent Skill and deterministic Node.js CLI for high-fidelity CSS icon → SVG conversion.
 
-![Eight CSS icons and their corresponding SVG candidates: plus, zoom-in, transform, mirror-horizontal, checkbox-checked, link-connected, screenshot, and picture-adjust.](.github/assets/css-to-svg-8-icons.png)
+![CSS and SVG rows for tick, broken-heart, awkward, link-connected, download, volume, audio-track, and loop.](.github/assets/css-to-svg-8-icons.png)
 
-A small Codex Skill plus a deterministic Node.js CLI. It reads CSS rules directly instead of tracing screenshots, so each candidate stays inspectable and can be compared with the browser-rendered source.
+Built specifically for CSS icons, where generic CSS-to-SVG converters tend to lose pseudo-elements, border geometry, clipping, and transform placement. It reads CSS rules directly instead of tracing screenshots, producing reviewable SVG candidates that preserve the icon’s construction.
 
-## Install as a Codex Skill
+## Use with an AI Agent
 
-Clone this repository into your Codex skills directory, then restart or refresh Codex so it discovers the skill:
+This is a general `SKILL.md`-based skill. Put this repository in the skill directory configured by your AI Agent runtime, then ask the agent to convert CSS icons into SVG candidates and flag anything needing manual review.
 
 ```text
-<CODEX_HOME>/skills/vs-css-icon-converter
+<agent-skill-directory>/vs-css-icon-converter
 ```
 
-For example:
+For a manual install:
 
 ```sh
-git clone https://github.com/GitRuozhi/vs-css-icon-converter.git ~/.codex/skills/vs-css-icon-converter
+git clone https://github.com/GitRuozhi/vs-css-icon-converter.git <agent-skill-directory>/vs-css-icon-converter
 ```
-
-Then ask Codex to use `$vs-css-icon-converter`, or make a request such as “convert these CSS icons into SVG candidates and flag anything needing manual review.”
 
 ## CLI
 
@@ -35,7 +33,7 @@ Add each relevant stylesheet with another `--css` argument. The CLI emits a tran
 ## Handles
 
 - CSS icon rules and pseudo-elements
-- Pixel geometry, borders, border radii, solid fills, and `currentColor`
+- Pixel geometry, borders, border radii, and solid fills
 - Rectangular `linear-gradient` layers, polygon `clip-path`, and simple transforms
 - 16×16 canvas placement, including non-default root boxes
 - Dotted borders as explicit SVG line segments

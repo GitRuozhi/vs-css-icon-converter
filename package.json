@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Convert CSS icon definitions into reviewable currentColor SVG candidates.",
+  "description": "High-fidelity CSS icon to SVG conversion for AI Agent Skills.",
   "license": "MIT",
   "keywords": [
-    "codex",
+    "ai-agent",
     "agent-skill",
     "css-icons",
     "css-to-svg",

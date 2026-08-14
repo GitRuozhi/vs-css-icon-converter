@@ -1,9 +1,9 @@
 ---
 name: vs-css-icon-converter
-description: Convert CSS icon definitions into transparent, currentColor-driven SVG candidates with deterministic geometry extraction and manual-review warnings. Use for CSS-to-SVG icon conversion or browser comparison when icons use pseudo-elements, CSS borders, gradients, clip-path polygons, simple transforms, or 16×16 design canvases.
+description: Convert CSS icon definitions into high-fidelity SVG candidates with deterministic geometry extraction and manual-review warnings. Use for CSS-to-SVG icon conversion or browser comparison when icons use pseudo-elements, CSS borders, gradients, clip-path polygons, simple transforms, or 16×16 design canvases.
 ---
 
-# VS CSS Icon Converter
+# CSS to SVG 转换器
 
 Use the bundled Node CLI to convert selected CSS icon classes into SVG candidates. The converter reads CSS declarations and pseudo-element rules directly; it does not infer geometry from a screenshot and does not depend on layout2vector.
 
