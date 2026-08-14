@@ -1,4 +1,4 @@
 interface:
   display_name: "VS CSS Icon Converter"
-  short_description: "Convert CSS icons into verified SVG candidates"
-  default_prompt: "Use $vs-css-icon-converter to convert the selected CSS icons into SVG and report any manual-review cases."
+  short_description: "Turn CSS icons into reviewable SVG candidates"
+  default_prompt: "Use $vs-css-icon-converter to convert selected CSS icon definitions into transparent currentColor SVG candidates and flag any manual-review cases."

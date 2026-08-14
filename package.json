@@ -3,8 +3,24 @@
   "version": "0.1.0",
   "private": false,
   "type": "module",
-  "description": "Conservative CSS icon to SVG converter for VS-style icons.",
+  "description": "Convert CSS icon definitions into reviewable currentColor SVG candidates.",
   "license": "MIT",
+  "keywords": [
+    "codex",
+    "agent-skill",
+    "css-icons",
+    "css-to-svg",
+    "svg",
+    "pseudo-elements"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GitRuozhi/vs-css-icon-converter.git"
+  },
+  "homepage": "https://github.com/GitRuozhi/vs-css-icon-converter",
+  "bugs": {
+    "url": "https://github.com/GitRuozhi/vs-css-icon-converter/issues"
+  },
   "engines": {
     "node": ">=20"
   },

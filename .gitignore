@@ -2,3 +2,4 @@ node_modules/
 *.report.json
 dist/
 coverage/
+.playwright-cli/

@@ -1,25 +1,47 @@
 # VS CSS Icon Converter
 
-Conservative CSS-to-SVG conversion for VS-style icons.
+Convert CSS icon geometry into transparent, `currentColor` SVG candidates for review.
 
-This repository contains an installable Codex AgentSkill and the deterministic Node.js CLI used by that skill. It reads CSS rules directly and converts a supported subset of icon geometry into transparent, `currentColor`-driven SVG candidates.
+![Eight CSS icons and their corresponding SVG candidates: plus, zoom-in, transform, mirror-horizontal, checkbox-checked, link-connected, screenshot, and picture-adjust.](.github/assets/css-to-svg-8-icons.png)
 
-The converter is intentionally not a universal CSS renderer. Unsupported declarations are reported as `manual-review`; generated output must be compared with the browser-rendered CSS before it is promoted to a formal icon set.
+A small Codex Skill plus a deterministic Node.js CLI. It reads CSS rules directly instead of tracing screenshots, so each candidate stays inspectable and can be compared with the browser-rendered source.
 
-## Quick start
+## Install as a Codex Skill
 
-```powershell
-npm test
+Clone this repository into your Codex skills directory, then restart or refresh Codex so it discovers the skill:
 
-node scripts/convert-icons.mjs `
-  --css "D:\Coding\VisualStandards\css\components-icon-basic.css" `
-  --icon plus `
-  --output "Temp\plus.svg" `
-  --report "Temp\plus.report.json"
+```text
+<CODEX_HOME>/skills/vs-css-icon-converter
 ```
 
-Install the skill by copying this repository folder into the Codex skills directory, or invoke it from a local skill path as `$vs-css-icon-converter`.
+For example:
 
-## Scope
+```sh
+git clone https://github.com/GitRuozhi/vs-css-icon-converter.git ~/.codex/skills/vs-css-icon-converter
+```
 
-Supported patterns include pseudo-elements, px geometry, borders, solid backgrounds, rectangular `linear-gradient` layers, polygon clip paths, simple rotation/mirroring, and `currentColor`. See [references/css-patterns.md](references/css-patterns.md) for the mapping and review rules.
+Then ask Codex to use `$vs-css-icon-converter`, or make a request such as “convert these CSS icons into SVG candidates and flag anything needing manual review.”
+
+## CLI
+
+Run one icon first and keep the JSON report beside the generated SVG:
+
+```sh
+node scripts/convert-icons.mjs --css ./icons.css --icon plus --output ./plus.svg --report ./plus.report.json
+```
+
+Add each relevant stylesheet with another `--css` argument. The CLI emits a transparent SVG and reports whether the result is converted or needs `manual-review`.
+
+## Handles
+
+- CSS icon rules and pseudo-elements
+- Pixel geometry, borders, border radii, solid fills, and `currentColor`
+- Rectangular `linear-gradient` layers, polygon `clip-path`, and simple transforms
+- 16×16 canvas placement, including non-default root boxes
+- Dotted borders as explicit SVG line segments
+
+## Review is intentional
+
+This is not a universal CSS renderer. Some browser layout behavior, advanced transforms, or unsupported declarations need a manual SVG correction. Treat every result as a reviewable candidate: compare it in a browser before adding it to a formal icon set.
+
+See [SKILL.md](SKILL.md) for the agent workflow and [references/css-patterns.md](references/css-patterns.md) for the mapping and review rules.
