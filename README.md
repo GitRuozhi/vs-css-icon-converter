@@ -1,4 +1,4 @@
-# CSS to SVG 转换器
+# CSS to SVG Converter
 
 An AI Agent Skill and deterministic Node.js CLI for high-fidelity CSS icon → SVG conversion.
 
