@@ -1,6 +1,6 @@
 ---
 name: vs-css-icon-converter
-description: Convert CSS icon definitions into transparent, currentColor-driven SVG candidates with deterministic geometry extraction, explicit manual-review warnings, and optional browser comparison. Use when converting VS or similar CSS icons that use pseudo-elements, borders, gradients, clip-path polygons, and simple transforms into SVG files.
+description: Convert CSS icon definitions into transparent, currentColor-driven SVG candidates with deterministic geometry extraction and manual-review warnings. Use for CSS-to-SVG icon conversion or browser comparison when icons use pseudo-elements, CSS borders, gradients, clip-path polygons, simple transforms, or 16×16 design canvases.
 ---
 
 # VS CSS Icon Converter
@@ -9,15 +9,27 @@ Use the bundled Node CLI to convert selected CSS icon classes into SVG candidate
 
 ## Workflow
 
-1. Identify the CSS file(s) containing the icon and the exact `.icon-name` selector.
+1. Identify the CSS file(s) containing the icon and the exact `.icon-name` selector. Include the project's global reset/foundation CSS when it defines root geometry; do not assume its `*` rule changes pseudo-element `box-sizing`.
 2. Run the converter for one icon first:
 
    ```powershell
    node scripts/convert-icons.mjs `
+     --css "D:\Coding\VisualStandards\css\foundations.css" `
      --css "D:\Coding\VisualStandards\css\components-icon-basic.css" `
      --icon plus `
      --output "Temp\plus.svg" `
      --report "Temp\plus.report.json"
+   ```
+
+   For a modifier state, keep the semantic icon name and pass the state separately:
+
+   ```powershell
+   node scripts/convert-icons.mjs `
+     --css "D:\Coding\VisualStandards\css\components-icon-page.css" `
+     --icon checkbox `
+     --variant checked `
+     --output "Temp\checkbox-checked.svg" `
+     --report "Temp\checkbox-checked.report.json"
    ```
 
 3. Inspect the report. Treat `status: "manual-review"` or any warning as a reason to inspect the SVG against a browser-rendered CSS source.
@@ -33,8 +45,11 @@ Use the bundled Node CLI to convert selected CSS icon classes into SVG candidate
 - `clip-path: polygon(...)`
 - `rotate()`, `scaleX()`, and `scaleY()` transforms
 - solid and dotted rectangular borders
+- transparent-border CSS triangles
+- `border-radius` on filled and stroked rectangles
+- clipped rounded borders through SVG `clipPath`
 
-The output uses a 16×16 viewBox by default, transparent background, and `currentColor`. The tool applies the VS `border-box` root model, pseudo-element `content-box` border expansion, simple transforms, and the 2px/2px dotted-border rhythm. It reports unsupported declarations rather than hiding them.
+The output uses a 16×16 viewBox by default, transparent background, and `currentColor`. The viewBox is the icon's design canvas; a non-default `.icon-name` box is centered inside that canvas before its relative `top` / `left` offset is applied. Do not add a global overflow override to conceal geometry errors. The tool applies the VS `border-box` root model, keeps pseudo-elements at their CSS-default `content-box` model unless explicitly overridden, resolves absolute children against the root padding box, flattens simple transforms, and uses the 2px/2px dotted-border rhythm. It reports unsupported declarations rather than hiding them.
 
 ## Guardrails
 
@@ -48,7 +63,8 @@ The output uses a 16×16 viewBox by default, transparent background, and `curren
 
 ```text
 --css <file>       Repeatable CSS input file.
---icon <name>      Icon class suffix without the `icon-` prefix.
+  --icon <name>      Icon class suffix without the `icon-` prefix.
+  --variant <name>   Optional modifier state, such as `checked`.
 --output <file>    SVG output path.
 --report <file>    Optional JSON report path.
 --size <number>    Square canvas size; default 16.
